@@ -1,31 +1,43 @@
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
+
+// Load env variables FIRST
+dotenv.config();
+
+console.log("API KEY CHECK →", process.env.CLOUDINARY_API_KEY);
+
+// import "./config/cloudinary.js";
+
+
+
+// DB
 import connectDB from "./config/db.js";
+connectDB();
+
+// Routes
 import authRoutes from "./routes/authRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
+import uploadRoutes from "./routes/uploadRoutes.js";
 
-dotenv.config();
-connectDB();
+// Middleware
+import { protect } from "./middleware/authMiddleware.js";
 
 const app = express();
 
+// Core middlewares
 app.use(express.json());
 app.use(cors());
 
+// Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
+app.use("/api/upload", uploadRoutes);
 
+// Test routes
 app.get("/", (req, res) => {
   res.send("API is running...");
 });
-
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () =>
-  console.log(`Server running on port ${PORT}`)
-);
-
-import { protect } from "./middleware/authMiddleware.js";
 
 app.get("/api/test/protected", protect, (req, res) => {
   res.json({
@@ -34,5 +46,8 @@ app.get("/api/test/protected", protect, (req, res) => {
   });
 });
 
-
-
+// Server
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});

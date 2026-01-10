@@ -1,13 +1,12 @@
 import axios from "axios";
 
-const API = axios.create({
-  baseURL: "http://localhost:5000/api",
-});
+const API_URL = "http://localhost:5000/api/products";
 
-export const createProduct = async (product, token) => {
-  const res = await API.post(
-    "/products/create-product",
-    product,
+// CREATE PRODUCT (ADMIN)
+export const createProduct = async (data, token) => {
+  const res = await axios.post(
+    `${API_URL}/create-product`,
+    data,
     {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -17,14 +16,22 @@ export const createProduct = async (product, token) => {
   return res.data;
 };
 
-export const getAllProducts = async () => {
-  const res = await API.get("/products/get-products");
+// GET ALL PRODUCTS (PUBLIC)
+export const getProducts = async () => {
+  const res = await axios.get(`${API_URL}/get-products`);
   return res.data;
 };
 
+// GET SINGLE PRODUCT (PUBLIC)
+export const getProduct = async (id) => {
+  const res = await axios.get(`${API_URL}/get-product/${id}`);
+  return res.data;
+};
+
+// DELETE PRODUCT (ADMIN) ✅ FIX
 export const deleteProduct = async (id, token) => {
-  const res = await API.delete(
-    `/products/delete-product/${id}`,
+  const res = await axios.delete(
+    `${API_URL}/delete-product/${id}`,
     {
       headers: {
         Authorization: `Bearer ${token}`,

@@ -1,18 +1,25 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 
+import Home from "./pages/Home";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Navbar from "./components/Navbar";
+import { AuthProvider } from "./context/AuthContext";
 
-
-function App() {
+const App = () => {
   return (
-    <div className="min-h-screen bg-red-600 flex items-center justify-center">
-      <h1 className="text-5xl font-extrabold text-white">
-        TAILWIND V4 WORKING
-      </h1>
-    </div>
+    <AuthProvider>
+      <BrowserRouter>
+        <Navbar />
+
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   );
-}
+};
 
 export default App;

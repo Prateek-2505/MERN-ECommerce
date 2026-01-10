@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
 import { deleteProduct, getProducts } from "../api/productApi";
 import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const AdminProducts = () => {
   const { token } = useAuth();
+  const navigate = useNavigate();
+
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -23,8 +26,8 @@ const AdminProducts = () => {
   }, []);
 
   const handleDelete = async (id) => {
-    const confirm = window.confirm("Delete this product?");
-    if (!confirm) return;
+    const confirmDelete = window.confirm("Delete this product?");
+    if (!confirmDelete) return;
 
     try {
       await deleteProduct(id, token);
@@ -66,7 +69,14 @@ const AdminProducts = () => {
               <td className="border p-2">{p.name}</td>
               <td className="border p-2">₹ {p.price}</td>
               <td className="border p-2">{p.stock}</td>
-              <td className="border p-2">
+              <td className="border p-2 space-x-2">
+                <button
+                  onClick={() => navigate(`/admin/edit-product/${p._id}`)}
+                  className="bg-blue-500 text-white px-3 py-1 rounded"
+                >
+                  Edit
+                </button>
+
                 <button
                   onClick={() => handleDelete(p._id)}
                   className="bg-red-500 text-white px-3 py-1 rounded"

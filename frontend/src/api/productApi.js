@@ -1,6 +1,7 @@
 import axios from "axios";
 
 const API_URL = "http://localhost:5000/api/products";
+const UPLOAD_URL = "http://localhost:5000/api/upload";
 
 // CREATE PRODUCT (ADMIN)
 export const createProduct = async (data, token) => {
@@ -28,7 +29,39 @@ export const getProduct = async (id) => {
   return res.data;
 };
 
-// DELETE PRODUCT (ADMIN) ✅ FIX
+// ✅ UPLOAD IMAGE (ADMIN) — FIXED
+export const uploadProductImage = async (image, token) => {
+  const formData = new FormData();
+  formData.append("image", image);
+
+  const res = await axios.post(
+    `${UPLOAD_URL}/product-image`, // ✅ MATCHES BACKEND
+    formData,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  return res.data;
+};
+
+// UPDATE PRODUCT (ADMIN - PATCH)
+export const updateProduct = async (id, updates, token) => {
+  const res = await axios.patch(
+    `${API_URL}/update-product/${id}`,
+    updates,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+  return res.data;
+};
+
+// DELETE PRODUCT (ADMIN)
 export const deleteProduct = async (id, token) => {
   const res = await axios.delete(
     `${API_URL}/delete-product/${id}`,

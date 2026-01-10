@@ -5,7 +5,10 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import AdminDashboard from "./pages/AdminDashboard";
 import CreateProduct from "./pages/CreateProduct";
+import AdminProducts from "./pages/AdminProducts";
+import AdminEditProduct from "./pages/AdminEditProduct";
 import ProductDetails from "./pages/ProductDetails";
+
 import Navbar from "./components/Navbar";
 import AdminRoute from "./components/AdminRoute";
 import { AuthProvider } from "./context/AuthContext";
@@ -17,6 +20,7 @@ const App = () => {
         <Navbar />
 
         <Routes>
+          {/* PUBLIC */}
           <Route path="/" element={<Home />} />
           <Route path="/product/:id" element={<ProductDetails />} />
           <Route path="/login" element={<Login />} />
@@ -37,6 +41,24 @@ const App = () => {
             element={
               <AdminRoute>
                 <CreateProduct />
+              </AdminRoute>
+            }
+          />
+
+          <Route
+            path="/admin/products"
+            element={
+              <AdminRoute>
+                <AdminProducts />
+              </AdminRoute>
+            }
+          />
+
+          <Route
+            path="/admin/edit-product/:id"
+            element={
+              <AdminRoute>
+                <AdminEditProduct />
               </AdminRoute>
             }
           />

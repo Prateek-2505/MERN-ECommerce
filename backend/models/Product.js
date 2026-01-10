@@ -1,14 +1,42 @@
 import mongoose from "mongoose";
 
-const productSchema = mongoose.Schema(
+const productSchema = new mongoose.Schema(
   {
-    name: String,
-    description: String,
-    price: Number,
-    category: String,
-    brand: String,
-    countInStock: Number,
-    image: String,
+    name: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    description: {
+      type: String,
+      required: true,
+    },
+    price: {
+      type: Number,
+      required: true,
+    },
+    category: {
+      type: String,
+      required: true,
+    },
+    brand: {
+      type: String,
+    },
+    stock: {
+      type: Number,
+      required: true,
+      default: 0,
+    },
+    images: [
+      {
+        type: String,
+      },
+    ],
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
   },
   { timestamps: true }
 );

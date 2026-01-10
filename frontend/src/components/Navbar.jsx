@@ -17,8 +17,9 @@ const Navbar = () => {
         MERN Store
       </Link>
 
-      {/* Links */}
+      {/* Navigation Links */}
       <div className="flex items-center gap-4">
+        {/* Logged Out */}
         {!isAuthenticated && (
           <>
             <Link
@@ -36,17 +37,36 @@ const Navbar = () => {
           </>
         )}
 
+        {/* Logged In */}
         {isAuthenticated && (
           <>
+            {/* Admin Links */}
             {isAdmin && (
-              <Link
-                to="/admin/dashboard"
-                className="hover:text-gray-300 transition"
-              >
-                Admin
-              </Link>
+              <>
+                <Link
+                  to="/admin/dashboard"
+                  className="hover:text-gray-300 transition"
+                >
+                  Admin Dashboard
+                </Link>
+
+                <Link
+                  to="/admin/products"
+                  className="hover:text-gray-300 transition"
+                >
+                  Products
+                </Link>
+
+                <Link
+                  to="/admin/create-product"
+                  className="hover:text-gray-300 transition"
+                >
+                  Add Product
+                </Link>
+              </>
             )}
 
+            {/* Logout */}
             <button
               onClick={handleLogout}
               className="bg-white text-black px-3 py-1 rounded hover:bg-gray-200 transition"

@@ -1,14 +1,19 @@
 import express from "express";
-import upload from "../middleware/uploadMiddleware.js";
-import { protect, admin } from "../middleware/authMiddleware.js";
+import multer from "multer";
+import { protect, isAdmin } from "../middleware/authMiddleware.js";
 import { uploadProductImage } from "../controllers/uploadController.js";
 
 const router = express.Router();
 
+// Multer memory storage
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
+
+// ✅ CORRECT ADMIN-PROTECTED ROUTE
 router.post(
   "/product-image",
   protect,
-  admin,
+  isAdmin,
   upload.single("image"),
   uploadProductImage
 );

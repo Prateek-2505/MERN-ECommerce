@@ -7,35 +7,26 @@ const productSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-    description: {
-      type: String,
-      required: true,
-    },
     price: {
       type: Number,
+      required: true,
+    },
+    description: {
+      type: String,
       required: true,
     },
     category: {
       type: String,
       required: true,
     },
-    brand: {
+    image: {
       type: String,
+      required: true,
     },
     stock: {
       type: Number,
       required: true,
-      default: 0,
-    },
-    images: [
-      {
-        type: String,
-      },
-    ],
-    user: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
+      min: 0,
     },
   },
   { timestamps: true }

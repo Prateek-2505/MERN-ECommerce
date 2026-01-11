@@ -25,6 +25,11 @@ import { protect } from "./middleware/authMiddleware.js";
 
 const app = express();
 
+
+import orderRoutes from "./routes/orderRoutes.js";
+
+
+
 // Core middlewares
 app.use(express.json());
 app.use(cors());
@@ -33,6 +38,7 @@ app.use(cors());
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/upload", uploadRoutes);
+app.use("/api/orders", orderRoutes);
 
 // Test routes
 app.get("/", (req, res) => {

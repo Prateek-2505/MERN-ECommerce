@@ -26,7 +26,7 @@ const Navbar = () => {
 
       {/* Navigation Links */}
       <div className="flex items-center gap-4">
-        {/* Cart (Always visible) */}
+        {/* Cart */}
         <Link to="/cart" className="relative hover:text-gray-300 transition">
           Cart
           {cartCount > 0 && (
@@ -51,7 +51,12 @@ const Navbar = () => {
         {/* Logged In */}
         {isAuthenticated && (
           <>
-            {/* Admin Links */}
+            {/* User */}
+            <Link to="/my-orders" className="hover:text-gray-300 transition">
+              My Orders
+            </Link>
+
+            {/* Admin */}
             {isAdmin && (
               <>
                 <Link
@@ -66,13 +71,6 @@ const Navbar = () => {
                   className="hover:text-gray-300 transition"
                 >
                   Products
-                </Link>
-
-                <Link
-                  to="/admin/create-product"
-                  className="hover:text-gray-300 transition"
-                >
-                  Add Product
                 </Link>
               </>
             )}

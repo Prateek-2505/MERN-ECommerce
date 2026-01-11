@@ -1,7 +1,9 @@
 import { useCart } from "../context/CartContext";
+import { useNavigate } from "react-router-dom";
 
 const Cart = () => {
   const { cartItems, removeFromCart, clearCart } = useCart();
+  const navigate = useNavigate();
 
   const total = cartItems.reduce(
     (acc, item) => acc + item.price * item.qty,
@@ -35,12 +37,19 @@ const Cart = () => {
         </div>
       ))}
 
-      <div className="mt-6">
+      <div className="mt-6 space-y-3">
         <h2 className="text-xl font-bold">Total: ₹ {total}</h2>
 
         <button
+          onClick={() => navigate("/checkout")}
+          className="bg-black text-white px-6 py-2 rounded"
+        >
+          Proceed to Checkout
+        </button>
+
+        <button
           onClick={clearCart}
-          className="mt-4 bg-gray-300 px-4 py-2 rounded"
+          className="bg-gray-300 px-6 py-2 rounded"
         >
           Clear Cart
         </button>

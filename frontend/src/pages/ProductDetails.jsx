@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { getProduct } from "../api/productApi";
+import { useCart } from "../context/CartContext";
 
 const ProductDetails = () => {
   const { id } = useParams();
+  const { addToCart } = useCart();
 
   const [product, setProduct] = useState(null);
+  const [qty, setQty] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -76,9 +79,28 @@ const ProductDetails = () => {
             </p>
           )}
 
-          {/* Future buttons */}
+          {/* Quantity selector */}
+          {product.stock > 0 && (
+            <div className="flex items-center gap-2">
+              <label className="font-medium">Qty:</label>
+              <select
+                value={qty}
+                onChange={(e) => setQty(Number(e.target.value))}
+                className="border p-2 rounded"
+              >
+                {[...Array(product.stock).keys()].map((x) => (
+                  <option key={x + 1} value={x + 1}>
+                    {x + 1}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {/* Add to Cart */}
           <button
             disabled={product.stock === 0}
+            onClick={() => addToCart(product, qty)}
             className="mt-4 bg-black text-white px-6 py-2 rounded disabled:bg-gray-400"
           >
             Add to Cart

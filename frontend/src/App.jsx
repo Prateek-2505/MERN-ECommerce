@@ -8,62 +8,67 @@ import CreateProduct from "./pages/CreateProduct";
 import AdminProducts from "./pages/AdminProducts";
 import AdminEditProduct from "./pages/AdminEditProduct";
 import ProductDetails from "./pages/ProductDetails";
+import Cart from "./pages/Cart";
 
 import Navbar from "./components/Navbar";
 import AdminRoute from "./components/AdminRoute";
 import { AuthProvider } from "./context/AuthContext";
+import { CartProvider } from "./context/CartContext";
 
 const App = () => {
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <Navbar />
+      <CartProvider>
+        <BrowserRouter>
+          <Navbar />
 
-        <Routes>
-          {/* PUBLIC */}
-          <Route path="/" element={<Home />} />
-          <Route path="/product/:id" element={<ProductDetails />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+          <Routes>
+            {/* PUBLIC */}
+            <Route path="/" element={<Home />} />
+            <Route path="/product/:id" element={<ProductDetails />} />
+            <Route path="/cart" element={<Cart />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
 
-          {/* ADMIN */}
-          <Route
-            path="/admin/dashboard"
-            element={
-              <AdminRoute>
-                <AdminDashboard />
-              </AdminRoute>
-            }
-          />
+            {/* ADMIN */}
+            <Route
+              path="/admin/dashboard"
+              element={
+                <AdminRoute>
+                  <AdminDashboard />
+                </AdminRoute>
+              }
+            />
 
-          <Route
-            path="/admin/create-product"
-            element={
-              <AdminRoute>
-                <CreateProduct />
-              </AdminRoute>
-            }
-          />
+            <Route
+              path="/admin/create-product"
+              element={
+                <AdminRoute>
+                  <CreateProduct />
+                </AdminRoute>
+              }
+            />
 
-          <Route
-            path="/admin/products"
-            element={
-              <AdminRoute>
-                <AdminProducts />
-              </AdminRoute>
-            }
-          />
+            <Route
+              path="/admin/products"
+              element={
+                <AdminRoute>
+                  <AdminProducts />
+                </AdminRoute>
+              }
+            />
 
-          <Route
-            path="/admin/edit-product/:id"
-            element={
-              <AdminRoute>
-                <AdminEditProduct />
-              </AdminRoute>
-            }
-          />
-        </Routes>
-      </BrowserRouter>
+            <Route
+              path="/admin/edit-product/:id"
+              element={
+                <AdminRoute>
+                  <AdminEditProduct />
+                </AdminRoute>
+              }
+            />
+          </Routes>
+        </BrowserRouter>
+      </CartProvider>
     </AuthProvider>
   );
 };

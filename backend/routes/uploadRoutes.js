@@ -1,21 +1,36 @@
 import express from "express";
 import multer from "multer";
+import { uploadImage } from "../controllers/uploadController.js";
 import { protect, isAdmin } from "../middleware/authMiddleware.js";
-import { uploadProductImage } from "../controllers/uploadController.js";
 
 const router = express.Router();
 
-// Multer memory storage
-const storage = multer.memoryStorage();
-const upload = multer({ storage });
+// 🔥 MEMORY storage (REQUIRED for streamifier)
+const upload = multer({ storage: multer.memoryStorage() });
 
-// ✅ CORRECT ADMIN-PROTECTED ROUTE
+// ADMIN — PRODUCT IMAGE
 router.post(
   "/product-image",
   protect,
   isAdmin,
   upload.single("image"),
-  uploadProductImage
+  (req, res, next) => {
+    req.uploadFolder = "products";
+    next();
+  },
+  uploadImage
+);
+
+// USER — AVATAR IMAGE
+router.post(
+  "/avatar",
+  protect,
+  upload.single("image"),
+  (req, res, next) => {
+    req.uploadFolder = "avatars";
+    next();
+  },
+  uploadImage
 );
 
 export default router;

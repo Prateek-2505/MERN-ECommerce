@@ -35,6 +35,12 @@ app.use(express.json());
 app.use(cors());
 
 // Routes
+
+
+import userRoutes from "./routes/userRoutes.js";
+
+app.use("/api/users", userRoutes);
+
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/upload", uploadRoutes);

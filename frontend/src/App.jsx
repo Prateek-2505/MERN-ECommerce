@@ -11,6 +11,8 @@ import Checkout from "./pages/Checkout";
 // ================= USER PAGES =================
 import MyOrders from "./pages/MyOrders";
 import MyOrderDetails from "./pages/MyOrderDetails";
+import Profile from "./pages/Profile";
+import EditProfile from "./pages/EditProfile";
 
 // ================= ADMIN PAGES =================
 import AdminDashboard from "./pages/AdminDashboard";
@@ -54,6 +56,26 @@ const App = () => {
               }
             />
 
+            {/* ================= USER PROFILE (READ ONLY) ================= */}
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <Profile />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* ================= USER EDIT PROFILE ================= */}
+            <Route
+              path="/profile/edit"
+              element={
+                <ProtectedRoute>
+                  <EditProfile />
+                </ProtectedRoute>
+              }
+            />
+
             {/* ================= USER ORDERS ================= */}
             <Route
               path="/my-orders"
@@ -79,6 +101,26 @@ const App = () => {
               element={
                 <AdminRoute>
                   <AdminDashboard />
+                </AdminRoute>
+              }
+            />
+
+            {/* ================= ADMIN PROFILE (READ ONLY) ================= */}
+            <Route
+              path="/admin/profile"
+              element={
+                <AdminRoute>
+                  <Profile />
+                </AdminRoute>
+              }
+            />
+
+            {/* ================= ADMIN EDIT PROFILE ================= */}
+            <Route
+              path="/admin/profile/edit"
+              element={
+                <AdminRoute>
+                  <EditProfile />
                 </AdminRoute>
               }
             />

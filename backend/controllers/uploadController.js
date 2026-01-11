@@ -1,7 +1,7 @@
 import { v2 as cloudinary } from "cloudinary";
 import streamifier from "streamifier";
 
-export const uploadProductImage = async (req, res) => {
+export const uploadImage = async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({
@@ -10,13 +10,16 @@ export const uploadProductImage = async (req, res) => {
       });
     }
 
+    // folder comes from route
+    const folder = req.uploadFolder || "uploads";
+
     const result = await new Promise((resolve, reject) => {
       const stream = cloudinary.uploader.upload_stream(
         {
           cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
           api_key: process.env.CLOUDINARY_API_KEY,
           api_secret: process.env.CLOUDINARY_API_SECRET,
-          folder: "products",
+          folder,
         },
         (error, result) => {
           if (error) reject(error);

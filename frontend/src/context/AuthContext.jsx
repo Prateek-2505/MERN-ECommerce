@@ -7,6 +7,7 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // 🔹 Restore auth on refresh
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     const storedToken = localStorage.getItem("token");
@@ -40,9 +41,19 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("token");
   };
 
-  // ⛔ CRITICAL: block render until auth is restored
+  // 🔥 THIS IS THE FIX
+  const updateUser = (updatedFields) => {
+    setUser((prev) => {
+      if (!prev) return prev;
+
+      const updatedUser = { ...prev, ...updatedFields };
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+      return updatedUser;
+    });
+  };
+
   if (loading) {
-    return null; // or a loader later
+    return null; // block render until auth restored
   }
 
   return (
@@ -54,6 +65,7 @@ export const AuthProvider = ({ children }) => {
         isAdmin: user?.role === "admin",
         login,
         logout,
+        updateUser, // ✅ expose updater
       }}
     >
       {children}

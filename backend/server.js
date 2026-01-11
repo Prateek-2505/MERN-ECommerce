@@ -1,52 +1,51 @@
-import express from "express";
+import path from "path";
+import { fileURLToPath } from "url";
 import dotenv from "dotenv";
+import express from "express";
 import cors from "cors";
 
-// Load env variables FIRST
-dotenv.config();
+// ================= FORCE .env LOAD (CRITICAL FIX) =================
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-console.log("API KEY CHECK →", process.env.CLOUDINARY_API_KEY);
+dotenv.config({
+  path: path.join(__dirname, ".env"),
+});
 
-// import "./config/cloudinary.js";
+// DEBUG (TEMP — REMOVE AFTER IT WORKS)
+console.log("ENV CHECK:", {
+  RAZORPAY_KEY_ID: process.env.RAZORPAY_KEY_ID,
+});
 
-
-
-// DB
+// ================= DATABASE =================
 import connectDB from "./config/db.js";
 connectDB();
 
-// Routes
+// ================= ROUTES =================
 import authRoutes from "./routes/authRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
 import uploadRoutes from "./routes/uploadRoutes.js";
+import orderRoutes from "./routes/orderRoutes.js";
+import paymentRoutes from "./routes/paymentRoutes.js";
+import userRoutes from "./routes/userRoutes.js";
 
-// Middleware
+// ================= MIDDLEWARE =================
 import { protect } from "./middleware/authMiddleware.js";
 
 const app = express();
 
-
-import orderRoutes from "./routes/orderRoutes.js";
-
-
-
-// Core middlewares
 app.use(express.json());
 app.use(cors());
 
-// Routes
-
-
-import userRoutes from "./routes/userRoutes.js";
-
+// ================= API ROUTES =================
 app.use("/api/users", userRoutes);
-
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use("/api/orders", orderRoutes);
+app.use("/api/payments", paymentRoutes);
 
-// Test routes
+// ================= TEST ROUTES =================
 app.get("/", (req, res) => {
   res.send("API is running...");
 });
@@ -58,7 +57,7 @@ app.get("/api/test/protected", protect, (req, res) => {
   });
 });
 
-// Server
+// ================= SERVER =================
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

@@ -15,7 +15,7 @@ const router = express.Router();
 // USER
 router.post("/create", protect, createOrder);
 router.get("/my-orders", protect, getMyOrders);
-router.get("/my/:id", protect, getMyOrderById); // ✅ FIX
+router.get("/my/:id", protect, getMyOrderById);
 
 // ADMIN
 router.get("/all", protect, isAdmin, getAllOrders);

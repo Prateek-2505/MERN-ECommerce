@@ -11,6 +11,7 @@ import Checkout from "./pages/Checkout";
 // ================= USER PAGES =================
 import MyOrders from "./pages/MyOrders";
 import MyOrderDetails from "./pages/MyOrderDetails";
+import PaymentPage from "./pages/PaymentPage";
 import Profile from "./pages/Profile";
 import EditProfile from "./pages/EditProfile";
 
@@ -56,7 +57,7 @@ const App = () => {
               }
             />
 
-            {/* ================= USER PROFILE (READ ONLY) ================= */}
+            {/* ================= USER PROFILE ================= */}
             <Route
               path="/profile"
               element={
@@ -66,7 +67,6 @@ const App = () => {
               }
             />
 
-            {/* ================= USER EDIT PROFILE ================= */}
             <Route
               path="/profile/edit"
               element={
@@ -95,6 +95,16 @@ const App = () => {
               }
             />
 
+            {/* ================= PAYMENT ================= */}
+            <Route
+              path="/pay/:id"
+              element={
+                <ProtectedRoute>
+                  <PaymentPage />
+                </ProtectedRoute>
+              }
+            />
+
             {/* ================= ADMIN ================= */}
             <Route
               path="/admin/dashboard"
@@ -105,7 +115,6 @@ const App = () => {
               }
             />
 
-            {/* ================= ADMIN PROFILE (READ ONLY) ================= */}
             <Route
               path="/admin/profile"
               element={
@@ -115,7 +124,6 @@ const App = () => {
               }
             />
 
-            {/* ================= ADMIN EDIT PROFILE ================= */}
             <Route
               path="/admin/profile/edit"
               element={
@@ -161,7 +169,6 @@ const App = () => {
               }
             />
 
-            {/* ================= ADMIN ORDER DETAILS ================= */}
             <Route
               path="/admin/orders/:id"
               element={

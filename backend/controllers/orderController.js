@@ -93,8 +93,10 @@ export const getAllOrders = async (req, res) => {
 
 // ADMIN – SINGLE ORDER
 export const getOrderById = async (req, res) => {
-  const order = await Order.findById(req.params.id)
-    .populate("user", "name email");
+  const order = await Order.findById(req.params.id).populate(
+    "user",
+    "name email"
+  );
 
   if (!order) {
     return res.status(404).json({
@@ -106,12 +108,19 @@ export const getOrderById = async (req, res) => {
   res.json({ success: true, order });
 };
 
-// ADMIN – UPDATE STATUS (BLOCK DELIVERED)
+// ADMIN – UPDATE STATUS (BLOCK UNPAID)
 export const updateOrderStatus = async (req, res) => {
   const order = await Order.findById(req.params.id);
 
   if (!order) {
     return res.status(404).json({ success: false, message: "Order not found" });
+  }
+
+  if (!order.isPaid) {
+    return res.status(400).json({
+      success: false,
+      message: "Order must be paid before updating status",
+    });
   }
 
   if (order.status === "Delivered") {
@@ -127,7 +136,7 @@ export const updateOrderStatus = async (req, res) => {
   res.json({ success: true, order });
 };
 
-// ADMIN – DELETE ORDER (BLOCK DELIVERED)
+// ADMIN – DELETE ORDER
 export const deleteOrder = async (req, res) => {
   const order = await Order.findById(req.params.id);
 
@@ -142,7 +151,6 @@ export const deleteOrder = async (req, res) => {
     });
   }
 
-  // Restock
   for (const item of order.orderItems) {
     const product = await Product.findById(item.product);
     if (product) {

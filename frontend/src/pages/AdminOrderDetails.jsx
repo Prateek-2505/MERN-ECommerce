@@ -7,6 +7,7 @@ import {
 } from "../api/orderApi";
 import { useAuth } from "../context/AuthContext";
 import OrderTimeline from "../components/OrderTimeline";
+import PaymentStatusBadge from "../components/PaymentStatusBadge";
 
 const AdminOrderDetails = () => {
   const { id } = useParams();
@@ -32,12 +33,14 @@ const AdminOrderDetails = () => {
     <div className="p-6 max-w-5xl mx-auto">
       <h1 className="text-2xl font-bold mb-2">Order Details</h1>
 
-      {/* TIMELINE */}
       <OrderTimeline currentStatus={order.status} />
 
       <p><strong>User:</strong> {order.user?.email}</p>
       <p><strong>Total:</strong> ₹ {order.totalPrice}</p>
-      <p><strong>Status:</strong> {order.status}</p>
+      <p className="flex items-center gap-2">
+        <strong>Payment:</strong>
+        <PaymentStatusBadge isPaid={order.isPaid} />
+      </p>
 
       {!isDelivered && (
         <>

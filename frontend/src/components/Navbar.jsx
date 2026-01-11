@@ -15,12 +15,31 @@ const Navbar = () => {
     0
   );
 
+  const canGoBack = window.history.length > 1;
+
   return (
     <nav className="bg-black text-white px-6 py-4 flex justify-between items-center">
-      <Link to="/" className="text-xl font-bold">
-        MERN Store
-      </Link>
+      {/* LEFT */}
+      <div className="flex items-center gap-4">
+        {/* 🔙 BACK BUTTON */}
+        <button
+          onClick={() => navigate(-1)}
+          disabled={!canGoBack}
+          className={`px-3 py-1 rounded border ${
+            canGoBack
+              ? "border-white hover:bg-white hover:text-black"
+              : "border-gray-500 text-gray-500 cursor-not-allowed"
+          }`}
+        >
+          ← Back
+        </button>
 
+        <Link to="/" className="text-xl font-bold">
+          MERN Store
+        </Link>
+      </div>
+
+      {/* RIGHT */}
       <div className="flex items-center gap-4">
         <Link to="/cart">
           Cart ({cartCount})
@@ -35,6 +54,12 @@ const Navbar = () => {
 
         {isAuthenticated && user && (
           <>
+            {/* MY ORDERS — USER & ADMIN */}
+            <Link to="/my-orders">
+              My Orders
+            </Link>
+
+            {/* PROFILE */}
             <Link
               to="/profile"
               className="flex items-center gap-2"
@@ -50,12 +75,14 @@ const Navbar = () => {
               <span>{user.name}</span>
             </Link>
 
+            {/* ADMIN DASHBOARD */}
             {isAdmin && (
               <Link to="/admin/dashboard">
                 Admin Dashboard
               </Link>
             )}
 
+            {/* LOGOUT */}
             <button
               onClick={() => {
                 logout();

@@ -5,7 +5,9 @@ import { getMyOrderById, deleteOrder } from "../api/orderApi";
 import { useAuth } from "../context/AuthContext";
 import OrderTimeline from "../components/OrderTimeline";
 
-const MyOrderDetails = () => {
+const MyOrderDetails = ({ theme }) => {
+  const isDark = theme === "dark";
+
   const { id } = useParams();
   const navigate = useNavigate();
   const { token } = useAuth();
@@ -22,13 +24,32 @@ const MyOrderDetails = () => {
     fetchOrder();
   }, [id, token]);
 
-  if (loading) return <p className="p-6">Loading...</p>;
-  if (!order) return <p className="p-6">Order not found</p>;
+  /* ================= LOADING ================= */
+  if (loading) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <p className={isDark ? "text-slate-300" : "text-slate-700"}>
+          Loading…
+        </p>
+      </div>
+    );
+  }
+
+  if (!order) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <p className="text-red-500 font-medium">
+          Order not found
+        </p>
+      </div>
+    );
+  }
 
   const isShippedOrDelivered =
     order.status === "Shipped" ||
     order.status === "Delivered";
 
+  /* ================= ACTIONS ================= */
   const handleDelete = async () => {
     const confirm = window.confirm(
       "Are you sure? This order will be cancelled."
@@ -43,7 +64,7 @@ const MyOrderDetails = () => {
     navigate(`/pay/${order._id}`);
   };
 
-  // ✅ CORRECT INVOICE DOWNLOAD (AUTH SAFE)
+  /* ================= INVOICE DOWNLOAD ================= */
   const downloadInvoice = async () => {
     try {
       const res = await axios.get(
@@ -79,18 +100,32 @@ const MyOrderDetails = () => {
   };
 
   return (
-    <div className="p-6 max-w-5xl mx-auto">
-      <h1 className="text-2xl font-bold mb-2">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* ================= HEADER ================= */}
+      <h1
+        className={`text-2xl font-bold mb-4 ${
+          isDark ? "text-slate-100" : "text-slate-900"
+        }`}
+      >
         Order Details
       </h1>
 
+      {/* ================= TIMELINE ================= */}
       <OrderTimeline
         currentStatus={order.status}
         isPaid={order.isPaid}
         paidAt={order.paidAt}
       />
 
-      <div className="border p-4 rounded mb-6">
+      {/* ================= SUMMARY ================= */}
+      <div
+        className={`mt-6 rounded-xl border p-5 mb-8
+          ${
+            isDark
+              ? "bg-slate-900 border-slate-700 text-slate-100"
+              : "bg-white border-slate-200 text-slate-900"
+          }`}
+      >
         <p>
           <strong>Order ID:</strong> {order._id}
         </p>
@@ -114,12 +149,17 @@ const MyOrderDetails = () => {
         </p>
       </div>
 
-      {/* 💳 PAYMENT / INVOICE ACTIONS */}
-      <div className="mb-6 flex gap-4">
+      {/* ================= PAYMENT / INVOICE ================= */}
+      <div className="mb-8 flex flex-wrap gap-4">
         {!order.isPaid && (
           <button
             onClick={handlePayment}
-            className="bg-green-600 text-white px-4 py-2 rounded"
+            className={`px-4 py-2 rounded-lg font-semibold transition
+              ${
+                isDark
+                  ? "bg-green-400 text-black hover:opacity-90"
+                  : "bg-green-600 text-white hover:opacity-90"
+              }`}
           >
             Pay Now
           </button>
@@ -128,50 +168,91 @@ const MyOrderDetails = () => {
         {order.isPaid && (
           <button
             onClick={downloadInvoice}
-            className="bg-blue-600 text-white px-4 py-2 rounded"
+            className={`px-4 py-2 rounded-lg font-semibold transition
+              ${
+                isDark
+                  ? "bg-blue-400 text-black hover:opacity-90"
+                  : "bg-blue-600 text-white hover:opacity-90"
+              }`}
           >
             Download Invoice (PDF)
           </button>
         )}
       </div>
 
-      {/* ❌ DELETE BLOCKED WHEN SHIPPED */}
+      {/* ================= CANCEL ================= */}
       {!isShippedOrDelivered ? (
         <button
           onClick={handleDelete}
-          className="mb-6 bg-red-600 text-white px-4 py-2 rounded"
+          className={`mb-8 px-4 py-2 rounded-lg font-semibold transition
+            ${
+              isDark
+                ? "bg-red-400 text-black hover:opacity-90"
+                : "bg-red-600 text-white hover:opacity-90"
+            }`}
         >
           Cancel Order
         </button>
       ) : (
-        <p className="mb-6 text-gray-500 font-medium">
+        <p
+          className={`mb-8 font-medium ${
+            isDark ? "text-slate-400" : "text-slate-500"
+          }`}
+        >
           This order can no longer be cancelled.
         </p>
       )}
 
-      <h2 className="text-xl font-semibold mb-2">
+      {/* ================= ITEMS ================= */}
+      <h2
+        className={`text-xl font-semibold mb-3 ${
+          isDark ? "text-slate-100" : "text-slate-900"
+        }`}
+      >
         Items
       </h2>
 
-      {order.orderItems.map((item, idx) => (
-        <div
-          key={idx}
-          className="flex justify-between border-b py-2"
-        >
-          <div>
-            <p className="font-medium">
-              {item.name}
-            </p>
-            <p className="text-sm text-gray-600">
-              ₹ {item.price} × {item.qty}
+      <div
+        className={`rounded-xl border
+          ${
+            isDark
+              ? "border-slate-700 bg-slate-900"
+              : "border-slate-200 bg-white"
+          }`}
+      >
+        {order.orderItems.map((item, idx) => (
+          <div
+            key={idx}
+            className={`flex justify-between px-5 py-3
+              ${
+                idx !== order.orderItems.length - 1
+                  ? isDark
+                    ? "border-b border-slate-700"
+                    : "border-b border-slate-200"
+                  : ""
+              }`}
+          >
+            <div>
+              <p className="font-medium">
+                {item.name}
+              </p>
+              <p
+                className={`text-sm ${
+                  isDark
+                    ? "text-slate-300"
+                    : "text-slate-600"
+                }`}
+              >
+                ₹ {item.price} × {item.qty}
+              </p>
+            </div>
+
+            <p className="font-semibold">
+              ₹ {item.price * item.qty}
             </p>
           </div>
-
-          <p className="font-semibold">
-            ₹ {item.price * item.qty}
-          </p>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 };

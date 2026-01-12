@@ -3,8 +3,9 @@ import { fileURLToPath } from "url";
 import dotenv from "dotenv";
 import express from "express";
 import cors from "cors";
+import { v2 as cloudinary } from "cloudinary";
 
-// ================= FORCE .env LOAD (CRITICAL FIX) =================
+// ================= FORCE .env LOAD =================
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -12,8 +13,12 @@ dotenv.config({
   path: path.join(__dirname, ".env"),
 });
 
-// DEBUG (TEMP — REMOVE AFTER IT WORKS)
-
+// ================= CLOUDINARY CONFIG (GLOBAL) =================
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 // ================= DATABASE =================
 import connectDB from "./config/db.js";
@@ -33,7 +38,9 @@ import { protect } from "./middleware/authMiddleware.js";
 
 const app = express();
 
+// ✅ BODY PARSING
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 
 // ================= API ROUTES =================

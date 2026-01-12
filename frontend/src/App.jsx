@@ -1,21 +1,19 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Toaster } from "react-hot-toast";
+import { useState } from "react";
 
-// ================= PUBLIC PAGES =================
+// ================= PAGES =================
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ProductDetails from "./pages/ProductDetails";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
-
-// ================= USER PAGES =================
 import MyOrders from "./pages/MyOrders";
 import MyOrderDetails from "./pages/MyOrderDetails";
 import PaymentPage from "./pages/PaymentPage";
 import Profile from "./pages/Profile";
 import EditProfile from "./pages/EditProfile";
-
-// ================= ADMIN PAGES =================
 import AdminDashboard from "./pages/AdminDashboard";
 import CreateProduct from "./pages/CreateProduct";
 import AdminProducts from "./pages/AdminProducts";
@@ -33,152 +31,164 @@ import { AuthProvider } from "./context/AuthContext";
 import { CartProvider } from "./context/CartContext";
 
 const App = () => {
+  const [theme, setTheme] = useState("light");
+
   return (
     <AuthProvider>
       <CartProvider>
-        <BrowserRouter>
-          <Navbar />
+        {/* GLOBAL THEME WRAPPER */}
+        <div
+          className={
+            theme === "dark"
+              ? "min-h-screen bg-slate-950 text-slate-100"
+              : "min-h-screen bg-slate-50 text-slate-900"
+          }
+        >
+          <BrowserRouter>
+            <Toaster position="top-right" />
 
-          <Routes>
-            {/* ================= PUBLIC ================= */}
-            <Route path="/" element={<Home />} />
-            <Route path="/product/:id" element={<ProductDetails />} />
-            <Route path="/cart" element={<Cart />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
+            {/* NAVBAR */}
+            <Navbar theme={theme} setTheme={setTheme} />
 
-            {/* ================= CHECKOUT ================= */}
-            <Route
-              path="/checkout"
-              element={
-                <ProtectedRoute>
-                  <Checkout />
-                </ProtectedRoute>
-              }
-            />
+            <Routes>
+              {/* ================= PUBLIC ================= */}
+              <Route path="/" element={<Home theme={theme} />} />
 
-            {/* ================= USER PROFILE ================= */}
-            <Route
-              path="/profile"
-              element={
-                <ProtectedRoute>
-                  <Profile />
-                </ProtectedRoute>
-              }
-            />
+              <Route
+                path="/product/:id"
+                element={<ProductDetails theme={theme} />}
+              />
 
-            <Route
-              path="/profile/edit"
-              element={
-                <ProtectedRoute>
-                  <EditProfile />
-                </ProtectedRoute>
-              }
-            />
+              <Route
+                path="/cart"
+                element={<Cart theme={theme} />}
+              />
 
-            {/* ================= USER ORDERS ================= */}
-            <Route
-              path="/my-orders"
-              element={
-                <ProtectedRoute>
-                  <MyOrders />
-                </ProtectedRoute>
-              }
-            />
+              <Route
+                path="/login"
+                element={<Login theme={theme} />}
+              />
 
-            <Route
-              path="/my-orders/:id"
-              element={
-                <ProtectedRoute>
-                  <MyOrderDetails />
-                </ProtectedRoute>
-              }
-            />
+              <Route
+                path="/register"
+                element={<Register theme={theme} />}
+              />
 
-            {/* ================= PAYMENT ================= */}
-            <Route
-              path="/pay/:id"
-              element={
-                <ProtectedRoute>
-                  <PaymentPage />
-                </ProtectedRoute>
-              }
-            />
+              {/* ================= CHECKOUT ================= */}
+              <Route
+                path="/checkout"
+                element={
+                  <ProtectedRoute>
+                    <Checkout theme={theme} />
+                  </ProtectedRoute>
+                }
+              />
 
-            {/* ================= ADMIN ================= */}
-            <Route
-              path="/admin/dashboard"
-              element={
-                <AdminRoute>
-                  <AdminDashboard />
-                </AdminRoute>
-              }
-            />
+              {/* ================= USER PROFILE ================= */}
+              <Route
+                path="/profile"
+                element={
+                  <ProtectedRoute>
+                    <Profile theme={theme} />
+                  </ProtectedRoute>
+                }
+              />
 
-            <Route
-              path="/admin/profile"
-              element={
-                <AdminRoute>
-                  <Profile />
-                </AdminRoute>
-              }
-            />
+              <Route
+                path="/profile/edit"
+                element={
+                  <ProtectedRoute>
+                    <EditProfile theme={theme} />
+                  </ProtectedRoute>
+                }
+              />
 
-            <Route
-              path="/admin/profile/edit"
-              element={
-                <AdminRoute>
-                  <EditProfile />
-                </AdminRoute>
-              }
-            />
+              {/* ================= USER ORDERS ================= */}
+              <Route
+                path="/my-orders"
+                element={
+                  <ProtectedRoute>
+                    <MyOrders theme={theme} />
+                  </ProtectedRoute>
+                }
+              />
 
-            <Route
-              path="/admin/products"
-              element={
-                <AdminRoute>
-                  <AdminProducts />
-                </AdminRoute>
-              }
-            />
+              <Route
+                path="/my-orders/:id"
+                element={
+                  <ProtectedRoute>
+                    <MyOrderDetails theme={theme} />
+                  </ProtectedRoute>
+                }
+              />
 
-            <Route
-              path="/admin/create-product"
-              element={
-                <AdminRoute>
-                  <CreateProduct />
-                </AdminRoute>
-              }
-            />
+              {/* ================= PAYMENT ================= */}
+              <Route
+                path="/pay/:id"
+                element={
+                  <ProtectedRoute>
+                    <PaymentPage theme={theme} />
+                  </ProtectedRoute>
+                }
+              />
 
-            <Route
-              path="/admin/edit-product/:id"
-              element={
-                <AdminRoute>
-                  <AdminEditProduct />
-                </AdminRoute>
-              }
-            />
+              {/* ================= ADMIN ================= */}
+              <Route
+                path="/admin/dashboard"
+                element={
+                  <AdminRoute>
+                    <AdminDashboard theme={theme} />
+                  </AdminRoute>
+                }
+              />
 
-            <Route
-              path="/admin/orders"
-              element={
-                <AdminRoute>
-                  <AdminOrders />
-                </AdminRoute>
-              }
-            />
+              <Route
+                path="/admin/products"
+                element={
+                  <AdminRoute>
+                    <AdminProducts theme={theme} />
+                  </AdminRoute>
+                }
+              />
 
-            <Route
-              path="/admin/orders/:id"
-              element={
-                <AdminRoute>
-                  <AdminOrderDetails />
-                </AdminRoute>
-              }
-            />
-          </Routes>
-        </BrowserRouter>
+              <Route
+                path="/admin/create-product"
+                element={
+                  <AdminRoute>
+                    <CreateProduct theme={theme} />
+                  </AdminRoute>
+                }
+              />
+
+              <Route
+                path="/admin/edit-product/:id"
+                element={
+                  <AdminRoute>
+                    <AdminEditProduct theme={theme} />
+                  </AdminRoute>
+                }
+              />
+
+              <Route
+                path="/admin/orders"
+                element={
+                  <AdminRoute>
+                    <AdminOrders theme={theme} />
+                  </AdminRoute>
+                }
+              />
+
+              <Route
+                path="/admin/orders/:id"
+                element={
+                  <AdminRoute>
+                    <AdminOrderDetails theme={theme} />
+                  </AdminRoute>
+                }
+              />
+            </Routes>
+          </BrowserRouter>
+        </div>
       </CartProvider>
     </AuthProvider>
   );

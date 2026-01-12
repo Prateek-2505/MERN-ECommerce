@@ -9,7 +9,9 @@ import {
 } from "../api/productApi";
 import { useAuth } from "../context/AuthContext";
 
-const AdminProducts = () => {
+const AdminProducts = ({ theme }) => {
+  const isDark = theme === "dark";
+
   const { token } = useAuth();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] =
@@ -30,6 +32,7 @@ const AdminProducts = () => {
 
   const fetchProducts = async () => {
     try {
+      setLoading(true);
       const data = await getProducts(
         page,
         search,
@@ -58,16 +61,28 @@ const AdminProducts = () => {
     fetchProducts();
   };
 
-  if (loading) return <p className="p-6">Loading...</p>;
+  if (loading) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <p className={isDark ? "text-slate-300" : "text-slate-700"}>
+          Loading…
+        </p>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <h1
+        className={`text-2xl font-bold mb-6 ${
+          isDark ? "text-slate-100" : "text-slate-900"
+        }`}
+      >
         Admin Products
       </h1>
 
       {/* 🔍 SEARCH + CATEGORY */}
-      <div className="flex gap-4 mb-4">
+      <div className="flex flex-wrap gap-4 mb-6">
         <input
           type="text"
           placeholder="Search products"
@@ -79,7 +94,12 @@ const AdminProducts = () => {
               category,
             })
           }
-          className="border p-2 w-1/3"
+          className={`p-2 rounded border w-full sm:w-1/3
+            ${
+              isDark
+                ? "bg-slate-800 border-slate-600 text-slate-100 placeholder-slate-400"
+                : "bg-white border-slate-300 text-black"
+            }`}
         />
 
         <input
@@ -93,68 +113,117 @@ const AdminProducts = () => {
               category: e.target.value,
             })
           }
-          className="border p-2 w-1/4"
+          className={`p-2 rounded border w-full sm:w-1/4
+            ${
+              isDark
+                ? "bg-slate-800 border-slate-600 text-slate-100 placeholder-slate-400"
+                : "bg-white border-slate-300 text-black"
+            }`}
         />
       </div>
 
-      <table className="w-full border">
-        <thead className="bg-gray-200">
-          <tr>
-            <th className="border p-2">Image</th>
-            <th className="border p-2">Name</th>
-            <th className="border p-2">Price</th>
-            <th className="border p-2">Stock</th>
-            <th className="border p-2">Actions</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {products.map((p) => (
-            <tr key={p._id}>
-              <td className="border p-2">
-                <img
-                  src={p.image}
-                  alt={p.name}
-                  className="h-16 mx-auto"
-                />
-              </td>
-              <td className="border p-2">
-                {p.name}
-              </td>
-              <td className="border p-2">
-                ₹ {p.price}
-              </td>
-              <td className="border p-2">
-                {p.stock}
-              </td>
-              <td className="border p-2 space-x-2">
-                <button
-                  onClick={() =>
-                    navigate(
-                      `/admin/edit-product/${p._id}`
-                    )
-                  }
-                  className="bg-blue-500 text-white px-3 py-1 rounded"
-                >
-                  Edit
-                </button>
-
-                <button
-                  onClick={() =>
-                    handleDelete(p._id)
-                  }
-                  className="bg-red-500 text-white px-3 py-1 rounded"
-                >
-                  Delete
-                </button>
-              </td>
+      {/* 🧾 TABLE */}
+      <div
+        className={`overflow-x-auto rounded-xl border
+          ${
+            isDark
+              ? "border-slate-700 bg-slate-900"
+              : "border-slate-200 bg-white"
+          }`}
+      >
+        <table className="w-full text-sm">
+          <thead
+            className={
+              isDark
+                ? "bg-slate-800 text-slate-200"
+                : "bg-slate-100 text-slate-800"
+            }
+          >
+            <tr>
+              <th className="p-3 text-left">
+                Image
+              </th>
+              <th className="p-3 text-left">
+                Name
+              </th>
+              <th className="p-3 text-left">
+                Price
+              </th>
+              <th className="p-3 text-left">
+                Stock
+              </th>
+              <th className="p-3 text-left">
+                Actions
+              </th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+
+          <tbody>
+            {products.map((p) => (
+              <tr
+                key={p._id}
+                className={`border-t
+                  ${
+                    isDark
+                      ? "border-slate-700 hover:bg-slate-800"
+                      : "border-slate-200 hover:bg-slate-50"
+                  }`}
+              >
+                <td className="p-3">
+                  <img
+                    src={p.image}
+                    alt={p.name}
+                    className="h-16 w-16 object-cover rounded"
+                  />
+                </td>
+
+                <td
+                  className={`p-3 ${
+                    isDark
+                      ? "text-slate-100"
+                      : "text-slate-900"
+                  }`}
+                >
+                  {p.name}
+                </td>
+
+                <td className="p-3">
+                  ₹ {p.price}
+                </td>
+
+                <td className="p-3">
+                  {p.stock}
+                </td>
+
+                <td className="p-3 space-x-2">
+                  <button
+                    onClick={() =>
+                      navigate(
+                        `/admin/edit-product/${p._id}`
+                      )
+                    }
+                    className="px-3 py-1 rounded bg-blue-600 text-white hover:opacity-90"
+                  >
+                    Edit
+                  </button>
+
+                  <button
+                    onClick={() =>
+                      handleDelete(p._id)
+                    }
+                    className="px-3 py-1 rounded bg-red-600 text-white hover:opacity-90"
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       {/* 📄 PAGINATION */}
-      <div className="flex gap-2 mt-6">
+      <div className="flex flex-wrap gap-2 mt-6">
         {Array.from(
           { length: totalPages },
           (_, i) => i + 1
@@ -168,11 +237,16 @@ const AdminProducts = () => {
                 category,
               })
             }
-            className={`px-3 py-1 border rounded ${
-              p === page
-                ? "bg-black text-white"
-                : ""
-            }`}
+            className={`px-3 py-1 rounded border font-medium
+              ${
+                p === page
+                  ? isDark
+                    ? "bg-white text-black"
+                    : "bg-black text-white"
+                  : isDark
+                  ? "border-slate-600 text-slate-200 hover:bg-slate-800"
+                  : "border-slate-300 text-slate-900 hover:bg-slate-100"
+              }`}
           >
             {p}
           </button>

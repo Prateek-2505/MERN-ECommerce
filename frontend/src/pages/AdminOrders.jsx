@@ -11,8 +11,10 @@ const STATUSES = [
   "Delivered",
 ];
 
-const AdminOrders = () => {
+const AdminOrders = ({ theme }) => {
+  const isDark = theme === "dark";
   const { token } = useAuth();
+
   const [searchParams, setSearchParams] =
     useSearchParams();
 
@@ -29,6 +31,7 @@ const AdminOrders = () => {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
+        setLoading(true);
         const data = await getAllOrders(
           token,
           page,
@@ -46,17 +49,30 @@ const AdminOrders = () => {
     fetchOrders();
   }, [token, page, status]);
 
-  if (loading)
-    return <p className="p-6">Loading...</p>;
+  /* ================= LOADING ================= */
+  if (loading) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <p className={isDark ? "text-slate-300" : "text-slate-700"}>
+          Loading orders…
+        </p>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* ================= HEADER ================= */}
+      <h1
+        className={`text-2xl font-bold mb-6 ${
+          isDark ? "text-slate-100" : "text-slate-900"
+        }`}
+      >
         Manage Orders
       </h1>
 
-      {/* 🔍 STATUS FILTER */}
-      <div className="mb-4">
+      {/* ================= STATUS FILTER ================= */}
+      <div className="mb-6">
         <select
           value={status}
           onChange={(e) =>
@@ -65,99 +81,138 @@ const AdminOrders = () => {
               status: e.target.value,
             })
           }
-          className="border p-2"
+          className={`p-2 rounded-md border
+            ${
+              isDark
+                ? "bg-slate-800 border-slate-600 text-white"
+                : "bg-white border-slate-300 text-black"
+            }`}
         >
-          <option value="">
-            All Statuses
-          </option>
-          {STATUSES.filter(Boolean).map(
-            (s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            )
-          )}
+          <option value="">All Statuses</option>
+          {STATUSES.filter(Boolean).map((s) => (
+            <option key={s} value={s}>
+              {s}
+            </option>
+          ))}
         </select>
       </div>
 
+      {/* ================= EMPTY ================= */}
       {orders.length === 0 ? (
-        <p>No orders found</p>
+        <p className={isDark ? "text-slate-400" : "text-slate-600"}>
+          No orders found
+        </p>
       ) : (
         <>
-          <div className="overflow-x-auto">
-            <table className="w-full border">
-              <thead className="bg-gray-100">
+          {/* ================= TABLE ================= */}
+          <div
+            className={`overflow-x-auto rounded-xl border
+              ${
+                isDark
+                  ? "border-slate-700 bg-slate-900"
+                  : "border-slate-200 bg-white"
+              }`}
+          >
+            <table className="w-full text-sm">
+              <thead
+                className={
+                  isDark
+                    ? "bg-slate-800 text-slate-200"
+                    : "bg-slate-100 text-slate-800"
+                }
+              >
                 <tr>
-                  <th className="border p-2">
+                  <th className="p-3 text-left">
                     Order ID
                   </th>
-                  <th className="border p-2">
+                  <th className="p-3 text-left">
                     User
                   </th>
-                  <th className="border p-2">
+                  <th className="p-3 text-left">
                     Total
                   </th>
-                  <th className="border p-2">
+                  <th className="p-3 text-left">
                     Payment
                   </th>
-                  <th className="border p-2">
+                  <th className="p-3 text-left">
                     Status
                   </th>
-                  <th className="border p-2">
+                  <th className="p-3 text-left">
                     Date
                   </th>
-                  <th className="border p-2">
+                  <th className="p-3 text-left">
                     Action
                   </th>
                 </tr>
               </thead>
 
               <tbody>
-                {orders.map((order) => (
+                {orders.map((order, idx) => (
                   <tr
                     key={order._id}
-                    className="text-center"
+                    className={`border-t
+                      ${
+                        isDark
+                          ? "border-slate-700"
+                          : "border-slate-200"
+                      }`}
                   >
-                    <td className="border p-2">
+                    <td className="p-3">
                       {order._id.slice(-6)}
                     </td>
 
-                    <td className="border p-2">
-                      {order.user?.email ||
-                        "N/A"}
+                    <td className="p-3">
+                      {order.user?.email || "N/A"}
                     </td>
 
-                    <td className="border p-2">
+                    <td className="p-3">
                       ₹ {order.totalPrice}
                     </td>
 
-                    {/* ✅ PAYMENT STATUS */}
-                    <td className="border p-2">
+                    {/* PAYMENT */}
+                    <td className="p-3">
                       {order.isPaid ? (
-                        <span className="text-green-700 font-semibold">
+                        <span
+                          className={`font-semibold ${
+                            isDark
+                              ? "text-green-400"
+                              : "text-green-700"
+                          }`}
+                        >
                           Paid
                         </span>
                       ) : (
-                        <span className="text-red-600 font-semibold">
+                        <span
+                          className={`font-semibold ${
+                            isDark
+                              ? "text-red-400"
+                              : "text-red-600"
+                          }`}
+                        >
                           Unpaid
                         </span>
                       )}
                     </td>
 
-                    <td className="border p-2">
+                    <td className="p-3">
                       {order.status}
                     </td>
 
-                    <td className="border p-2">
+                    <td className="p-3">
                       {new Date(
                         order.createdAt
                       ).toLocaleDateString()}
                     </td>
 
-                    <td className="border p-2">
+                    <td className="p-3">
                       <Link
                         to={`/admin/orders/${order._id}`}
-                        className="text-blue-600 underline"
+                        className={`font-medium underline
+                          ${
+                            isDark
+                              ? "text-blue-400"
+                              : "text-blue-600"
+                          }`}
                       >
                         View
                       </Link>
@@ -168,8 +223,8 @@ const AdminOrders = () => {
             </table>
           </div>
 
-          {/* 📄 PAGINATION */}
-          <div className="flex gap-2 mt-6">
+          {/* ================= PAGINATION ================= */}
+          <div className="flex gap-2 mt-6 flex-wrap">
             {Array.from(
               { length: totalPages },
               (_, i) => i + 1
@@ -182,11 +237,16 @@ const AdminOrders = () => {
                     status,
                   })
                 }
-                className={`px-3 py-1 border rounded ${
-                  p === page
-                    ? "bg-black text-white"
-                    : ""
-                }`}
+                className={`px-3 py-1 rounded-md border font-medium transition
+                  ${
+                    p === page
+                      ? isDark
+                        ? "bg-white text-black"
+                        : "bg-slate-900 text-white"
+                      : isDark
+                      ? "border-slate-600 text-slate-200 hover:bg-slate-800"
+                      : "border-slate-300 text-slate-900 hover:bg-slate-100"
+                  }`}
               >
                 {p}
               </button>

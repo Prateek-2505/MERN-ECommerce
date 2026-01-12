@@ -1,7 +1,30 @@
-const STATUSES = ["Pending", "Processing", "Shipped", "Delivered"];
+const STATUSES = [
+  "Order Placed",
+  "Payment Completed",
+  "Processing",
+  "Shipped",
+  "Delivered",
+];
 
-const OrderTimeline = ({ currentStatus }) => {
-  const currentIndex = STATUSES.indexOf(currentStatus);
+const OrderTimeline = ({ currentStatus, isPaid }) => {
+  const getCurrentIndex = () => {
+    if (!isPaid) return 0;
+
+    switch (currentStatus) {
+      case "Pending":
+        return 1;
+      case "Processing":
+        return 2;
+      case "Shipped":
+        return 3;
+      case "Delivered":
+        return 4;
+      default:
+        return 0;
+    }
+  };
+
+  const currentIndex = getCurrentIndex();
 
   return (
     <div className="flex justify-between items-center my-6">
@@ -13,7 +36,6 @@ const OrderTimeline = ({ currentStatus }) => {
             key={status}
             className="flex-1 flex flex-col items-center"
           >
-            {/* Circle */}
             <div
               className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
                 isCompleted
@@ -24,20 +46,22 @@ const OrderTimeline = ({ currentStatus }) => {
               {isCompleted ? "✓" : index + 1}
             </div>
 
-            {/* Label */}
             <p
-              className={`mt-2 text-sm ${
-                isCompleted ? "text-green-700" : "text-gray-500"
+              className={`mt-2 text-sm text-center ${
+                isCompleted
+                  ? "text-green-700"
+                  : "text-gray-500"
               }`}
             >
               {status}
             </p>
 
-            {/* Line */}
             {index !== STATUSES.length - 1 && (
               <div
                 className={`h-1 w-full mt-2 ${
-                  isCompleted ? "bg-green-600" : "bg-gray-300"
+                  isCompleted
+                    ? "bg-green-600"
+                    : "bg-gray-300"
                 }`}
               />
             )}

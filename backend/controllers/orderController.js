@@ -58,9 +58,9 @@ export const createOrder = async (req, res) => {
 
 // USER – MY ORDERS
 export const getMyOrders = async (req, res) => {
-  const orders = await Order.find({ user: req.user._id }).sort({
-    createdAt: -1,
-  });
+  const orders = await Order.find({
+    user: req.user._id,
+  }).sort({ createdAt: -1 });
 
   res.json({ success: true, orders });
 };
@@ -82,21 +82,41 @@ export const getMyOrderById = async (req, res) => {
   res.json({ success: true, order });
 };
 
-// ADMIN – ALL ORDERS
+// ✅ ADMIN – ALL ORDERS (PAGINATION + FILTER)
 export const getAllOrders = async (req, res) => {
-  const orders = await Order.find()
-    .populate("user", "name email")
-    .sort({ createdAt: -1 });
+  const page = Number(req.query.page) || 1;
+  const limit = 8;
+  const skip = (page - 1) * limit;
 
-  res.json({ success: true, orders });
+  const filter = req.query.status
+    ? { status: req.query.status }
+    : {};
+
+  const totalOrders = await Order.countDocuments(
+    filter
+  );
+
+  const orders = await Order.find(filter)
+    .populate("user", "name email")
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit);
+
+  res.json({
+    success: true,
+    orders,
+    page,
+    totalPages: Math.ceil(
+      totalOrders / limit
+    ),
+  });
 };
 
 // ADMIN – SINGLE ORDER
 export const getOrderById = async (req, res) => {
-  const order = await Order.findById(req.params.id).populate(
-    "user",
-    "name email"
-  );
+  const order = await Order.findById(
+    req.params.id
+  ).populate("user", "name email");
 
   if (!order) {
     return res.status(404).json({
@@ -110,23 +130,30 @@ export const getOrderById = async (req, res) => {
 
 // ADMIN – UPDATE STATUS (BLOCK UNPAID)
 export const updateOrderStatus = async (req, res) => {
-  const order = await Order.findById(req.params.id);
+  const order = await Order.findById(
+    req.params.id
+  );
 
   if (!order) {
-    return res.status(404).json({ success: false, message: "Order not found" });
+    return res.status(404).json({
+      success: false,
+      message: "Order not found",
+    });
   }
 
   if (!order.isPaid) {
     return res.status(400).json({
       success: false,
-      message: "Order must be paid before updating status",
+      message:
+        "Order must be paid before updating status",
     });
   }
 
   if (order.status === "Delivered") {
     return res.status(400).json({
       success: false,
-      message: "Delivered orders cannot be modified",
+      message:
+        "Delivered orders cannot be modified",
     });
   }
 
@@ -138,21 +165,29 @@ export const updateOrderStatus = async (req, res) => {
 
 // ADMIN – DELETE ORDER
 export const deleteOrder = async (req, res) => {
-  const order = await Order.findById(req.params.id);
+  const order = await Order.findById(
+    req.params.id
+  );
 
   if (!order) {
-    return res.status(404).json({ success: false, message: "Order not found" });
+    return res.status(404).json({
+      success: false,
+      message: "Order not found",
+    });
   }
 
   if (order.status === "Delivered") {
     return res.status(400).json({
       success: false,
-      message: "Delivered orders cannot be deleted",
+      message:
+        "Delivered orders cannot be deleted",
     });
   }
 
   for (const item of order.orderItems) {
-    const product = await Product.findById(item.product);
+    const product = await Product.findById(
+      item.product
+    );
     if (product) {
       product.stock += item.qty;
       await product.save();
@@ -163,6 +198,7 @@ export const deleteOrder = async (req, res) => {
 
   res.json({
     success: true,
-    message: "Order deleted and stock restored",
+    message:
+      "Order deleted and stock restored",
   });
 };

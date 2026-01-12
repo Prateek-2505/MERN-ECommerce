@@ -17,25 +17,36 @@ export const createProduct = async (data, token) => {
   return res.data;
 };
 
-// GET ALL PRODUCTS (PUBLIC)
-export const getProducts = async () => {
-  const res = await axios.get(`${API_URL}/get-products`);
+// ✅ GET PRODUCTS (PAGINATION + SEARCH + CATEGORY)
+export const getProducts = async (
+  page = 1,
+  search = "",
+  category = ""
+) => {
+  const res = await axios.get(
+    `${API_URL}/get-products?page=${page}&search=${search}&category=${category}`
+  );
   return res.data;
 };
 
-// GET SINGLE PRODUCT (PUBLIC)
+// GET SINGLE PRODUCT
 export const getProduct = async (id) => {
-  const res = await axios.get(`${API_URL}/get-product/${id}`);
+  const res = await axios.get(
+    `${API_URL}/get-product/${id}`
+  );
   return res.data;
 };
 
-// ✅ UPLOAD IMAGE (ADMIN) — FIXED
-export const uploadProductImage = async (image, token) => {
+// UPLOAD IMAGE
+export const uploadProductImage = async (
+  image,
+  token
+) => {
   const formData = new FormData();
   formData.append("image", image);
 
   const res = await axios.post(
-    `${UPLOAD_URL}/product-image`, // ✅ MATCHES BACKEND
+    `${UPLOAD_URL}/product-image`,
     formData,
     {
       headers: {
@@ -47,8 +58,12 @@ export const uploadProductImage = async (image, token) => {
   return res.data;
 };
 
-// UPDATE PRODUCT (ADMIN - PATCH)
-export const updateProduct = async (id, updates, token) => {
+// UPDATE PRODUCT
+export const updateProduct = async (
+  id,
+  updates,
+  token
+) => {
   const res = await axios.patch(
     `${API_URL}/update-product/${id}`,
     updates,
@@ -61,7 +76,7 @@ export const updateProduct = async (id, updates, token) => {
   return res.data;
 };
 
-// DELETE PRODUCT (ADMIN)
+// DELETE PRODUCT
 export const deleteProduct = async (id, token) => {
   const res = await axios.delete(
     `${API_URL}/delete-product/${id}`,

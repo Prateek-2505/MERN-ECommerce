@@ -50,12 +50,44 @@ export const createProduct = async (req, res) => {
 };
 
 // GET ALL PRODUCTS
+
+// GET ALL PRODUCTS (PAGINATION + SEARCH + CATEGORY)
 export const getProducts = async (req, res) => {
   try {
-    const products = await Product.find();
+    const page = Number(req.query.page) || 1;
+    const limit = 8;
+    const skip = (page - 1) * limit;
+
+    const search = req.query.search
+      ? {
+          name: {
+            $regex: req.query.search,
+            $options: "i",
+          },
+        }
+      : {};
+
+    const category = req.query.category
+      ? { category: req.query.category }
+      : {};
+
+    const filter = { ...search, ...category };
+
+    const totalProducts =
+      await Product.countDocuments(filter);
+
+    const products = await Product.find(filter)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
     return res.status(200).json({
       success: true,
       products,
+      page,
+      totalPages: Math.ceil(
+        totalProducts / limit
+      ),
     });
   } catch {
     return res.status(500).json({
@@ -64,6 +96,7 @@ export const getProducts = async (req, res) => {
     });
   }
 };
+
 
 // GET SINGLE PRODUCT
 export const getProduct = async (req, res) => {

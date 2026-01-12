@@ -7,7 +7,6 @@ import {
 } from "../api/orderApi";
 import { useAuth } from "../context/AuthContext";
 import OrderTimeline from "../components/OrderTimeline";
-import PaymentStatusBadge from "../components/PaymentStatusBadge";
 
 const AdminOrderDetails = () => {
   const { id } = useParams();
@@ -15,51 +14,114 @@ const AdminOrderDetails = () => {
   const { token } = useAuth();
 
   const [order, setOrder] = useState(null);
+  const [error, setError] = useState("");
 
   const fetchOrder = async () => {
-    const data = await getOrderById(id, token);
-    setOrder(data.order);
+    try {
+      const data = await getOrderById(id, token);
+      setOrder(data.order);
+      setError("");
+    } catch (err) {
+      setError(
+        err.response?.data?.message ||
+          "Failed to fetch order"
+      );
+    }
   };
 
   useEffect(() => {
     fetchOrder();
   }, [id]);
 
+  if (error) return <p className="p-6">{error}</p>;
   if (!order) return <p className="p-6">Loading...</p>;
 
   const isDelivered = order.status === "Delivered";
+  const isUnpaid = !order.isPaid;
+
+  const handleStatusChange = async (newStatus) => {
+    try {
+      await updateOrderStatus(id, newStatus, token);
+      fetchOrder();
+    } catch (err) {
+      alert(
+        err.response?.data?.message ||
+          "Status update failed"
+      );
+    }
+  };
 
   return (
     <div className="p-6 max-w-5xl mx-auto">
-      <h1 className="text-2xl font-bold mb-2">Order Details</h1>
+      <h1 className="text-2xl font-bold mb-2">
+        Order Details
+      </h1>
 
-      <OrderTimeline currentStatus={order.status} />
+      {/* ✅ PAYMENT-AWARE TIMELINE */}
+      <OrderTimeline
+        currentStatus={order.status}
+        isPaid={order.isPaid}
+      />
 
-      <p><strong>User:</strong> {order.user?.email}</p>
-      <p><strong>Total:</strong> ₹ {order.totalPrice}</p>
-      <p className="flex items-center gap-2">
-        <strong>Payment:</strong>
-        <PaymentStatusBadge isPaid={order.isPaid} />
-      </p>
+      <div className="border p-4 rounded mb-4">
+        <p>
+          <strong>User:</strong>{" "}
+          {order.user?.email}
+        </p>
+        <p>
+          <strong>Total:</strong> ₹ {order.totalPrice}
+        </p>
+        <p>
+          <strong>Payment:</strong>{" "}
+          {order.isPaid ? "Paid" : "Pending"}
+        </p>
+        <p>
+          <strong>Status:</strong> {order.status}
+        </p>
+      </div>
+
+      {/* ⚠️ UNPAID WARNING */}
+      {isUnpaid && (
+        <p className="mb-4 text-red-600 font-semibold">
+          ⚠️ This order is unpaid. Shipping and delivery
+          are disabled until payment is completed.
+        </p>
+      )}
 
       {!isDelivered && (
         <>
           <select
             value={order.status}
             onChange={(e) =>
-              updateOrderStatus(id, e.target.value, token).then(fetchOrder)
+              handleStatusChange(e.target.value)
             }
-            className="border p-2 mt-4"
+            className="border p-2 mt-2"
           >
-            <option>Pending</option>
-            <option>Processing</option>
-            <option>Shipped</option>
-            <option>Delivered</option>
+            <option value="Pending">Pending</option>
+            <option value="Processing">
+              Processing
+            </option>
+
+            {/* 🚫 DISABLED WHEN UNPAID */}
+            <option
+              value="Shipped"
+              disabled={isUnpaid}
+            >
+              Shipped
+            </option>
+            <option
+              value="Delivered"
+              disabled={isUnpaid}
+            >
+              Delivered
+            </option>
           </select>
 
           <button
             onClick={async () => {
-              const confirm = window.confirm("Delete this order?");
+              const confirm = window.confirm(
+                "Delete this order?"
+              );
               if (!confirm) return;
               await deleteOrder(id, token);
               navigate("/admin/orders");

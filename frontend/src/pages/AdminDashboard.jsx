@@ -24,7 +24,7 @@ const AdminDashboard = ({ theme }) => {
         // 1️⃣ PRODUCTS COUNT
         const productsData = await getProducts(1);
         const productsCount =
-          productsData.products?.length || 0;
+          productsData.totalProducts || 0;
 
         // 2️⃣ ORDERS + REVENUE
         const ordersData = await getAllOrders(

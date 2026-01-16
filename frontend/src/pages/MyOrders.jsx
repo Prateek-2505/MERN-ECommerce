@@ -1,40 +1,98 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { getMyOrders } from "../api/orderApi";
 import { useAuth } from "../context/AuthContext";
+
+const STATUS_OPTIONS = [
+  "All",
+  "Pending",
+  "Processing",
+  "Shipped",
+  "Delivered",
+];
 
 const MyOrders = ({ theme }) => {
   const isDark = theme === "dark";
   const { token } = useAuth();
 
   const [orders, setOrders] = useState([]);
+  const [search, setSearch] = useState("");
+  const [status, setStatus] = useState("All");
 
   useEffect(() => {
     const fetchOrders = async () => {
       const data = await getMyOrders(token);
       setOrders(data.orders);
     };
-
     fetchOrders();
   }, [token]);
 
-  const activeOrders = orders.filter(
+  const filteredOrders = useMemo(() => {
+    return orders.filter((order) => {
+      const matchesSearch =
+        order._id
+          .slice(-6)
+          .toLowerCase()
+          .includes(search.toLowerCase());
+
+      const matchesStatus =
+        status === "All" ||
+        order.status === status;
+
+      return matchesSearch && matchesStatus;
+    });
+  }, [orders, search, status]);
+
+  const activeOrders = filteredOrders.filter(
     (o) => o.status !== "Delivered"
   );
-  const completedOrders = orders.filter(
+  const completedOrders = filteredOrders.filter(
     (o) => o.status === "Delivered"
   );
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* ================= TITLE ================= */}
+    <div className="max-w-5xl mx-auto px-4 py-8">
+      {/* ================= HEADER ================= */}
       <h1
-        className={`text-2xl font-bold mb-8 ${
+        className={`text-2xl font-bold mb-6 ${
           isDark ? "text-slate-100" : "text-slate-900"
         }`}
       >
         My Orders
       </h1>
+
+      {/* ================= SEARCH + FILTER ================= */}
+      <div className="flex flex-col sm:flex-row gap-3 mb-8">
+        <input
+          type="text"
+          placeholder="Search by Order ID"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className={`w-full sm:w-2/3 px-4 py-2 rounded-lg border outline-none
+            ${
+              isDark
+                ? "bg-slate-800 border-slate-600 text-white placeholder-slate-400"
+                : "bg-white border-slate-300 text-black"
+            }`}
+        />
+
+        <select
+          value={status}
+          onChange={(e) => setStatus(e.target.value)}
+          className={`w-full sm:w-1/3 px-3 py-2 rounded-lg border
+            ${
+              isDark
+                ? "bg-slate-800 border-slate-600 text-white"
+                : "bg-white border-slate-300 text-black"
+            }`}
+        >
+          {STATUS_OPTIONS.map((s) => (
+            <option key={s} value={s}>
+              {s}
+            </option>
+          ))}
+        </select>
+      </div>
 
       {/* ================= ACTIVE ORDERS ================= */}
       <h2
@@ -46,11 +104,7 @@ const MyOrders = ({ theme }) => {
       </h2>
 
       {activeOrders.length === 0 ? (
-        <p
-          className={`mb-6 ${
-            isDark ? "text-slate-400" : "text-slate-600"
-          }`}
-        >
+        <p className={isDark ? "text-slate-400" : "text-slate-600"}>
           No active orders
         </p>
       ) : (
@@ -62,34 +116,20 @@ const MyOrders = ({ theme }) => {
               className={`block rounded-xl border p-4 transition
                 ${
                   isDark
-                    ? "bg-slate-900 border-slate-700 text-slate-100 hover:bg-slate-800"
-                    : "bg-white border-slate-200 text-slate-900 hover:bg-slate-50"
+                    ? "bg-slate-900 border-slate-700 hover:bg-slate-800 text-slate-100"
+                    : "bg-white border-slate-200 hover:bg-slate-50 text-slate-900"
                 }`}
             >
-              <div className="flex justify-between items-center">
+              <div className="flex justify-between">
                 <div>
                   <p className="font-medium">
                     Order ID: {order._id.slice(-6)}
                   </p>
-                  <p
-                    className={`text-sm ${
-                      isDark
-                        ? "text-slate-300"
-                        : "text-slate-600"
-                    }`}
-                  >
-                    Total: ₹ {order.totalPrice}
+                  <p className="text-sm opacity-80">
+                    ₹ {order.totalPrice}
                   </p>
                 </div>
-
-                <span
-                  className={`text-sm font-semibold px-3 py-1 rounded-full
-                    ${
-                      isDark
-                        ? "bg-yellow-400/10 text-yellow-400"
-                        : "bg-yellow-100 text-yellow-700"
-                    }`}
-                >
+                <span className="text-sm font-semibold">
                   {order.status}
                 </span>
               </div>
@@ -108,53 +148,36 @@ const MyOrders = ({ theme }) => {
       </h2>
 
       {completedOrders.length === 0 ? (
-        <p
-          className={`${
-            isDark ? "text-slate-400" : "text-slate-600"
-          }`}
-        >
+        <p className={isDark ? "text-slate-400" : "text-slate-600"}>
           No completed orders
         </p>
       ) : (
         <div className="space-y-3">
           {completedOrders.map((order) => (
-            <div
+            <Link
               key={order._id}
-              className={`rounded-xl border p-4
+              to={`/my-orders/${order._id}`}
+              className={`block rounded-xl border p-4 transition
                 ${
                   isDark
-                    ? "bg-slate-900 border-slate-700 text-slate-100"
-                    : "bg-slate-100 border-slate-200 text-slate-900"
+                    ? "bg-slate-900 border-slate-700 hover:bg-slate-800 text-slate-100"
+                    : "bg-slate-100 border-slate-200 hover:bg-slate-200 text-slate-900"
                 }`}
             >
-              <div className="flex justify-between items-center">
+              <div className="flex justify-between">
                 <div>
                   <p className="font-medium">
                     Order ID: {order._id.slice(-6)}
                   </p>
-                  <p
-                    className={`text-sm ${
-                      isDark
-                        ? "text-slate-300"
-                        : "text-slate-600"
-                    }`}
-                  >
-                    Total: ₹ {order.totalPrice}
+                  <p className="text-sm opacity-80">
+                    ₹ {order.totalPrice}
                   </p>
                 </div>
-
-                <span
-                  className={`text-sm font-semibold px-3 py-1 rounded-full
-                    ${
-                      isDark
-                        ? "bg-green-400/10 text-green-400"
-                        : "bg-green-100 text-green-700"
-                    }`}
-                >
+                <span className="font-semibold text-green-500">
                   Delivered
                 </span>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       )}

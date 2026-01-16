@@ -16,7 +16,6 @@ const Navbar = ({ theme, setTheme }) => {
   );
 
   const canGoBack = window.history.length > 1;
-
   const isDark = theme === "dark";
 
   return (
@@ -27,45 +26,53 @@ const Navbar = ({ theme, setTheme }) => {
           : "bg-white text-slate-900 border-slate-200"
       }`}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex justify-between items-center">
-        {/* LEFT */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        {/* ================= LEFT ================= */}
         <div className="flex items-center gap-4">
           <button
             onClick={() => navigate(-1)}
             disabled={!canGoBack}
-            className={`px-3 py-1.5 rounded-md border text-sm ${
+            className={`px-3 py-1.5 rounded-md border text-sm transition ${
               isDark
-                ? "border-slate-700 hover:bg-slate-800"
-                : "border-slate-300 hover:bg-slate-100"
+                ? "border-slate-700 hover:bg-slate-800 disabled:opacity-40"
+                : "border-slate-300 hover:bg-slate-100 disabled:opacity-40"
             }`}
           >
             ← Back
           </button>
 
           <Link to="/" className="text-lg font-bold">
-            MERN<span className="text-blue-600">Store</span>
+            Cart<span className="text-blue-600">ify</span>
           </Link>
         </div>
 
-        {/* RIGHT */}
+        {/* ================= RIGHT ================= */}
         <div className="flex items-center gap-4 text-sm">
+          {/* THEME TOGGLE (ICON ONLY) */}
           <button
             onClick={() =>
               setTheme(isDark ? "light" : "dark")
             }
-            className={`px-3 py-1.5 rounded ${
+            title={
               isDark
-                ? "bg-white text-black"
-                : "bg-slate-900 text-white"
+                ? "Switch to Light Mode"
+                : "Switch to Dark Mode"
+            }
+            className={`text-xl transition ${
+              isDark
+                ? "text-yellow-300 hover:text-yellow-200"
+                : "text-slate-700 hover:text-black"
             }`}
           >
-            {isDark ? "Light" : "Dark"}
+            {isDark ? "🌞" : "🌙"}
           </button>
 
+          {/* CART */}
           <Link to="/cart">
             Cart ({cartCount})
           </Link>
 
+          {/* GUEST */}
           {!isAuthenticated && (
             <>
               <Link to="/login">Login</Link>
@@ -73,31 +80,45 @@ const Navbar = ({ theme, setTheme }) => {
             </>
           )}
 
+          {/* AUTHENTICATED */}
           {isAuthenticated && user && (
             <>
               <Link to="/my-orders">My Orders</Link>
 
-              <Link to="/profile" className="flex items-center gap-2">
+              {isAdmin && (
+                <Link
+                  to="/admin/dashboard"
+                  className="font-semibold text-blue-600"
+                >
+                  Admin Panel
+                </Link>
+              )}
+
+              {/* PROFILE */}
+              <Link
+                to="/profile"
+                className="flex items-center gap-2 ml-3"
+              >
                 <img
                   src={user.avatar || FALLBACK_AVATAR}
                   onError={(e) =>
-                    (e.currentTarget.src = FALLBACK_AVATAR)
+                    (e.currentTarget.src =
+                      FALLBACK_AVATAR)
                   }
-                  className="w-8 h-8 rounded-full"
+                  className="w-8 h-8 rounded-full object-cover"
                 />
-                {user.name}
+                <span className="font-medium">
+                  {user.name}
+                </span>
               </Link>
 
-              {isAdmin && (
-                <Link to="/admin/dashboard">Admin</Link>
-              )}
-
+              {/* LOGOUT */}
               <button
                 onClick={() => {
                   logout();
                   navigate("/login");
                 }}
-                className="px-3 py-1.5 rounded bg-red-600 text-white"
+                className="px-3 py-1.5 rounded bg-red-600 text-white ml-2"
               >
                 Logout
               </button>

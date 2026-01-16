@@ -14,13 +14,23 @@ const MyOrderDetails = ({ theme }) => {
 
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const fetchOrder = async () => {
-      const data = await getMyOrderById(id, token);
-      setOrder(data.order);
-      setLoading(false);
+      try {
+        const data = await getMyOrderById(id, token);
+        setOrder(data.order);
+      } catch (err) {
+        setError(
+          err.response?.data?.message ||
+            "Failed to load order"
+        );
+      } finally {
+        setLoading(false);
+      }
     };
+
     fetchOrder();
   }, [id, token]);
 
@@ -30,6 +40,17 @@ const MyOrderDetails = ({ theme }) => {
       <div className="min-h-[60vh] flex items-center justify-center">
         <p className={isDark ? "text-slate-300" : "text-slate-700"}>
           Loading…
+        </p>
+      </div>
+    );
+  }
+
+  /* ================= ERROR ================= */
+  if (error) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <p className="text-red-500 font-medium">
+          {error}
         </p>
       </div>
     );
@@ -45,9 +66,14 @@ const MyOrderDetails = ({ theme }) => {
     );
   }
 
-  const isShippedOrDelivered =
-    order.status === "Shipped" ||
-    order.status === "Delivered";
+  const isDelivered = order.status === "Delivered";
+
+  const canCancel =
+    !order.isPaid &&
+    !isDelivered &&
+    order.status !== "Shipped";
+
+  const addr = order.shippingAddress;
 
   /* ================= ACTIONS ================= */
   const handleDelete = async () => {
@@ -56,12 +82,27 @@ const MyOrderDetails = ({ theme }) => {
     );
     if (!confirm) return;
 
-    await deleteOrder(order._id, token);
-    navigate("/my-orders");
+    try {
+      await deleteOrder(order._id, token);
+      navigate("/my-orders");
+    } catch (err) {
+      alert(
+        err.response?.data?.message ||
+          "This order cannot be cancelled"
+      );
+    }
   };
 
   const handlePayment = () => {
     navigate(`/pay/${order._id}`);
+  };
+
+  /* ================= INVOICE PREVIEW ================= */
+  const previewInvoice = () => {
+    window.open(
+      `http://localhost:5000/api/invoice/${order._id}`,
+      "_blank"
+    );
   };
 
   /* ================= INVOICE DOWNLOAD ================= */
@@ -100,7 +141,7 @@ const MyOrderDetails = ({ theme }) => {
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-5xl mx-auto px-4 py-8">
       {/* ================= HEADER ================= */}
       <h1
         className={`text-2xl font-bold mb-4 ${
@@ -117,14 +158,41 @@ const MyOrderDetails = ({ theme }) => {
         paidAt={order.paidAt}
       />
 
+      {/* ================= SHIPPING ADDRESS ================= */}
+      {addr && (
+        <div
+          className={`mt-6 rounded-xl border p-5 mb-6 text-sm ${
+            isDark
+              ? "bg-slate-900 border-slate-700 text-slate-200"
+              : "bg-slate-50 border-slate-300 text-slate-700"
+          }`}
+        >
+          <p className="font-semibold mb-2">
+            Shipping Address
+          </p>
+          <p>{addr.fullName}</p>
+          <p>{addr.phone}</p>
+          <p>
+            {addr.addressLine1}
+            {addr.addressLine2
+              ? `, ${addr.addressLine2}`
+              : ""}
+          </p>
+          <p>
+            {addr.city}, {addr.state}{" "}
+            {addr.postalCode}
+          </p>
+          <p>{addr.country}</p>
+        </div>
+      )}
+
       {/* ================= SUMMARY ================= */}
       <div
-        className={`mt-6 rounded-xl border p-5 mb-8
-          ${
-            isDark
-              ? "bg-slate-900 border-slate-700 text-slate-100"
-              : "bg-white border-slate-200 text-slate-900"
-          }`}
+        className={`rounded-xl border p-5 mb-8 ${
+          isDark
+            ? "bg-slate-900 border-slate-700 text-slate-100"
+            : "bg-white border-slate-200 text-slate-900"
+        }`}
       >
         <p>
           <strong>Order ID:</strong> {order._id}
@@ -145,62 +213,66 @@ const MyOrderDetails = ({ theme }) => {
         </p>
         <p>
           <strong>Placed On:</strong>{" "}
-          {new Date(order.createdAt).toLocaleString()}
+          {new Date(
+            order.createdAt
+          ).toLocaleString()}
         </p>
       </div>
 
-      {/* ================= PAYMENT / INVOICE ================= */}
+      {/* ================= ACTION BUTTONS ================= */}
       <div className="mb-8 flex flex-wrap gap-4">
-        {!order.isPaid && (
+        {!order.isPaid && !isDelivered && (
           <button
             onClick={handlePayment}
-            className={`px-4 py-2 rounded-lg font-semibold transition
-              ${
-                isDark
-                  ? "bg-green-400 text-black hover:opacity-90"
-                  : "bg-green-600 text-white hover:opacity-90"
-              }`}
+            className={`px-4 py-2 rounded-lg font-semibold transition ${
+              isDark
+                ? "bg-green-400 text-black hover:opacity-90"
+                : "bg-green-600 text-white hover:opacity-90"
+            }`}
           >
             Pay Now
           </button>
         )}
 
         {order.isPaid && (
-          <button
-            onClick={downloadInvoice}
-            className={`px-4 py-2 rounded-lg font-semibold transition
-              ${
+          <>
+            <button
+              onClick={previewInvoice}
+              className={`px-4 py-2 rounded-lg font-semibold transition ${
+                isDark
+                  ? "bg-slate-700 text-white hover:bg-slate-600"
+                  : "bg-slate-200 text-black hover:bg-slate-300"
+              }`}
+            >
+              Preview Invoice
+            </button>
+
+            <button
+              onClick={downloadInvoice}
+              className={`px-4 py-2 rounded-lg font-semibold transition ${
                 isDark
                   ? "bg-blue-400 text-black hover:opacity-90"
                   : "bg-blue-600 text-white hover:opacity-90"
               }`}
-          >
-            Download Invoice (PDF)
-          </button>
+            >
+              Download Invoice (PDF)
+            </button>
+          </>
         )}
       </div>
 
       {/* ================= CANCEL ================= */}
-      {!isShippedOrDelivered ? (
+      {canCancel && (
         <button
           onClick={handleDelete}
-          className={`mb-8 px-4 py-2 rounded-lg font-semibold transition
-            ${
-              isDark
-                ? "bg-red-400 text-black hover:opacity-90"
-                : "bg-red-600 text-white hover:opacity-90"
-            }`}
+          className={`mb-8 px-4 py-2 rounded-lg font-semibold transition ${
+            isDark
+              ? "bg-red-400 text-black hover:opacity-90"
+              : "bg-red-600 text-white hover:opacity-90"
+          }`}
         >
           Cancel Order
         </button>
-      ) : (
-        <p
-          className={`mb-8 font-medium ${
-            isDark ? "text-slate-400" : "text-slate-500"
-          }`}
-        >
-          This order can no longer be cancelled.
-        </p>
       )}
 
       {/* ================= ITEMS ================= */}
@@ -213,24 +285,23 @@ const MyOrderDetails = ({ theme }) => {
       </h2>
 
       <div
-        className={`rounded-xl border
-          ${
-            isDark
-              ? "border-slate-700 bg-slate-900"
-              : "border-slate-200 bg-white"
-          }`}
+        className={`rounded-xl border ${
+          isDark
+            ? "border-slate-700 bg-slate-900"
+            : "border-slate-200 bg-white"
+        }`}
       >
         {order.orderItems.map((item, idx) => (
           <div
             key={idx}
-            className={`flex justify-between px-5 py-3
-              ${
-                idx !== order.orderItems.length - 1
-                  ? isDark
-                    ? "border-b border-slate-700"
-                    : "border-b border-slate-200"
-                  : ""
-              }`}
+            className={`flex justify-between px-5 py-3 ${
+              idx !==
+              order.orderItems.length - 1
+                ? isDark
+                  ? "border-b border-slate-700"
+                  : "border-b border-slate-200"
+                : ""
+            }`}
           >
             <div>
               <p className="font-medium">

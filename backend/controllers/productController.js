@@ -1,4 +1,6 @@
 import Product from "../models/Product.js";
+import Order from "../models/Order.js";
+import { v2 as cloudinary } from "cloudinary";
 
 // CREATE PRODUCT (ADMIN)
 export const createProduct = async (req, res) => {
@@ -12,7 +14,6 @@ export const createProduct = async (req, res) => {
       stock,
     } = req.body;
 
-    // ✅ Validation
     if (
       !name ||
       !price ||
@@ -48,8 +49,6 @@ export const createProduct = async (req, res) => {
     });
   }
 };
-
-// GET ALL PRODUCTS
 
 // GET ALL PRODUCTS (PAGINATION + SEARCH + CATEGORY)
 export const getProducts = async (req, res) => {
@@ -88,6 +87,7 @@ export const getProducts = async (req, res) => {
       totalPages: Math.ceil(
         totalProducts / limit
       ),
+      totalProducts,
     });
   } catch {
     return res.status(500).json({
@@ -97,11 +97,13 @@ export const getProducts = async (req, res) => {
   }
 };
 
-
 // GET SINGLE PRODUCT
 export const getProduct = async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id);
+    const product = await Product.findById(
+      req.params.id
+    );
+
     return res.status(200).json({
       success: true,
       product,
@@ -115,13 +117,13 @@ export const getProduct = async (req, res) => {
 };
 
 // UPDATE PRODUCT (ADMIN)
-
-
 export const updateProduct = async (req, res) => {
   try {
     const updates = req.body;
 
-    const product = await Product.findById(req.params.id);
+    const product = await Product.findById(
+      req.params.id
+    );
 
     if (!product) {
       return res.status(404).json({
@@ -130,7 +132,6 @@ export const updateProduct = async (req, res) => {
       });
     }
 
-    // Update only provided fields
     Object.keys(updates).forEach((key) => {
       if (updates[key] !== undefined) {
         product[key] = updates[key];
@@ -152,9 +153,12 @@ export const updateProduct = async (req, res) => {
 };
 
 // DELETE PRODUCT (ADMIN)
+// 🧨 Deletes non-delivered orders that contain this product
 export const deleteProduct = async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id);
+    const productId = req.params.id;
+
+    const product = await Product.findById(productId);
 
     if (!product) {
       return res.status(404).json({
@@ -163,19 +167,29 @@ export const deleteProduct = async (req, res) => {
       });
     }
 
+    // 🧹 Delete all NON-delivered orders containing this product
+    await Order.deleteMany({
+      "orderItems.product": productId,
+      status: { $ne: "Delivered" },
+    });
+
     // 🧹 Delete image from Cloudinary if exists
     if (product.imagePublicId) {
-      await cloudinary.uploader.destroy(product.imagePublicId);
+      await cloudinary.uploader.destroy(
+        product.imagePublicId
+      );
     }
 
+    // 🧹 Delete product itself
     await product.deleteOne();
 
     res.status(200).json({
       success: true,
-      message: "Product deleted successfully",
+      message:
+        "Product deleted and related non-delivered orders removed",
     });
   } catch (error) {
-    console.error(error);
+    console.error("DELETE PRODUCT ERROR:", error);
     res.status(500).json({
       success: false,
       message: "Failed to delete product",

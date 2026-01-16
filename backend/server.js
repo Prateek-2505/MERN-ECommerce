@@ -3,6 +3,7 @@ import { fileURLToPath } from "url";
 import dotenv from "dotenv";
 import express from "express";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 import { v2 as cloudinary } from "cloudinary";
 
 // ================= FORCE .env LOAD =================
@@ -13,7 +14,7 @@ dotenv.config({
   path: path.join(__dirname, ".env"),
 });
 
-// ================= CLOUDINARY CONFIG (GLOBAL) =================
+// ================= CLOUDINARY CONFIG =================
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
@@ -32,16 +33,24 @@ import uploadRoutes from "./routes/uploadRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
+import addressRoutes from "./routes/addressRoutes.js"; // ✅ NEW
 
 // ================= MIDDLEWARE =================
 import { protect } from "./middleware/authMiddleware.js";
 
 const app = express();
 
-// ✅ BODY PARSING
+// ================= GLOBAL MIDDLEWARE =================
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors());
+app.use(cookieParser());
+
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  })
+);
 
 // ================= API ROUTES =================
 app.use("/api/invoice", invoiceRoutes);
@@ -51,6 +60,7 @@ app.use("/api/products", productRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/payments", paymentRoutes);
+app.use("/api/addresses", addressRoutes); // ✅ NEW
 
 // ================= TEST ROUTES =================
 app.get("/", (req, res) => {

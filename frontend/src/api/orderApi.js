@@ -2,14 +2,20 @@ import axios from "axios";
 
 const API_URL = "http://localhost:5000/api/orders";
 
-// CREATE ORDER
+// CREATE ORDER\
 export const createOrder = async (
   orderItems,
+  shippingAddress,
+  saveAddress,
   token
 ) => {
   const res = await axios.post(
     `${API_URL}/create`,
-    { orderItems },
+    {
+      orderItems,
+      shippingAddress,
+      saveAddress,
+    },
     {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -18,6 +24,7 @@ export const createOrder = async (
   );
   return res.data;
 };
+
 
 // USER – ALL ORDERS
 export const getMyOrders = async (token) => {
@@ -100,12 +107,9 @@ export const updateOrderStatus = async (
 };
 
 // ADMIN – DELETE ORDER
-export const deleteOrder = async (
-  id,
-  token
-) => {
+export const deleteOrder = async (id, token) => {
   const res = await axios.delete(
-    `${API_URL}/${id}`,
+    `http://localhost:5000/api/orders/cancel/${id}`,
     {
       headers: {
         Authorization: `Bearer ${token}`,

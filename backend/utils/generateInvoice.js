@@ -14,14 +14,16 @@ export const generateInvoice = (order, res) => {
 
   doc.pipe(res);
 
-  // TITLE
+  /* ================= TITLE ================= */
   doc
     .fontSize(20)
+    .font("Helvetica-Bold")
     .text("INVOICE", { align: "center" })
     .moveDown();
 
-  // ORDER INFO
-  doc.fontSize(12);
+  /* ================= ORDER INFO ================= */
+  doc.fontSize(12).font("Helvetica");
+
   doc.text(`Order ID: ${order._id}`);
   doc.text(
     `Order Date: ${new Date(
@@ -44,21 +46,55 @@ export const generateInvoice = (order, res) => {
 
   doc.moveDown();
 
-  // USER INFO
-  doc.text(
-    `Customer: ${order.user.name}`
-  );
-  doc.text(
-    `Email: ${order.user.email}`
-  );
+  /* ================= CUSTOMER INFO ================= */
+  doc
+    .font("Helvetica-Bold")
+    .text("Customer Details");
+  doc.moveDown(0.3);
+
+  doc.font("Helvetica");
+  doc.text(`Name: ${order.user.name}`);
+  doc.text(`Email: ${order.user.email}`);
 
   doc.moveDown();
 
-  // ITEMS HEADER
-  doc.fontSize(14).text("Items");
+  /* ================= SHIPPING ADDRESS ================= */
+  if (order.shippingAddress) {
+    const addr = order.shippingAddress;
+
+    doc
+      .font("Helvetica-Bold")
+      .text("Shipping Address");
+    doc.moveDown(0.3);
+
+    doc.font("Helvetica");
+
+    if (addr.fullName) doc.text(addr.fullName);
+    if (addr.phone) doc.text(`Phone: ${addr.phone}`);
+
+    doc.text(addr.addressLine1);
+
+    if (addr.addressLine2) {
+      doc.text(addr.addressLine2);
+    }
+
+    doc.text(
+      `${addr.city}, ${addr.state} ${addr.postalCode}`
+    );
+
+    doc.text(addr.country);
+
+    doc.moveDown();
+  }
+
+  /* ================= ITEMS ================= */
+  doc
+    .font("Helvetica-Bold")
+    .fontSize(14)
+    .text("Items");
   doc.moveDown(0.5);
 
-  doc.fontSize(12);
+  doc.font("Helvetica").fontSize(12);
 
   order.orderItems.forEach((item, index) => {
     doc.text(
@@ -70,8 +106,9 @@ export const generateInvoice = (order, res) => {
 
   doc.moveDown();
 
-  // TOTAL
+  /* ================= TOTAL ================= */
   doc
+    .font("Helvetica-Bold")
     .fontSize(14)
     .text(
       `Total Amount: ₹ ${order.totalPrice}`,

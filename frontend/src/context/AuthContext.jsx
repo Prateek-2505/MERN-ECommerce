@@ -1,4 +1,11 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
+import apiClient from "../api/apiClient";
+import { logoutUser } from "../api/authApi";
 
 const AuthContext = createContext(null);
 
@@ -7,54 +14,116 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // 🔹 Restore auth on refresh
+  /**
+   * ===============================
+   * RESTORE SESSION ON APP LOAD
+   * ===============================
+   */
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    const storedToken = localStorage.getItem("token");
-
-    if (storedUser && storedToken) {
+    const restoreSession = async () => {
       try {
-        setUser(JSON.parse(storedUser));
-        setToken(storedToken);
-      } catch (err) {
-        console.error("Invalid auth data, clearing storage");
-        localStorage.removeItem("user");
-        localStorage.removeItem("token");
-      }
-    }
+        // 1️⃣ Refresh access token
+        const refreshRes = await apiClient.post(
+          "/auth/refresh-token"
+        );
 
-    setLoading(false);
+        const newToken = refreshRes.data.token;
+
+        // 2️⃣ Set token (memory)
+        setToken(newToken);
+
+        // 3️⃣ Set default Authorization header
+        apiClient.defaults.headers.common[
+          "Authorization"
+        ] = `Bearer ${newToken}`;
+
+        // 4️⃣ Fetch current user
+        const userRes = await apiClient.get(
+          "/users/profile"
+        );
+
+        setUser(userRes.data.user);
+      } catch (error) {
+        // Not logged in or refresh failed
+        setUser(null);
+        setToken(null);
+        delete apiClient.defaults.headers.common[
+          "Authorization"
+        ];
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    restoreSession();
+
+    /**
+     * 🔔 GLOBAL LOGOUT EVENT
+     */
+    const logoutHandler = () => {
+      handleLogout();
+    };
+
+    window.addEventListener(
+      "auth-logout",
+      logoutHandler
+    );
+
+    return () => {
+      window.removeEventListener(
+        "auth-logout",
+        logoutHandler
+      );
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const login = (userData, jwtToken) => {
+  /**
+   * ===============================
+   * LOGIN
+   * ===============================
+   */
+  const login = (userData, accessToken) => {
     setUser(userData);
-    setToken(jwtToken);
+    setToken(accessToken);
 
-    localStorage.setItem("user", JSON.stringify(userData));
-    localStorage.setItem("token", jwtToken);
+    apiClient.defaults.headers.common[
+      "Authorization"
+    ] = `Bearer ${accessToken}`;
   };
 
-  const logout = () => {
+  /**
+   * ===============================
+   * LOGOUT
+   * ===============================
+   */
+  const handleLogout = async () => {
+    try {
+      await logoutUser();
+    } catch {
+      // ignore network errors
+    }
+
     setUser(null);
     setToken(null);
-    localStorage.removeItem("user");
-    localStorage.removeItem("token");
+
+    delete apiClient.defaults.headers.common[
+      "Authorization"
+    ];
   };
 
-  // 🔥 THIS IS THE FIX
+  /**
+   * ===============================
+   * UPDATE USER (PROFILE EDIT)
+   * ===============================
+   */
   const updateUser = (updatedFields) => {
-    setUser((prev) => {
-      if (!prev) return prev;
-
-      const updatedUser = { ...prev, ...updatedFields };
-      localStorage.setItem("user", JSON.stringify(updatedUser));
-      return updatedUser;
-    });
+    setUser((prev) =>
+      prev ? { ...prev, ...updatedFields } : prev
+    );
   };
 
-  if (loading) {
-    return null; // block render until auth restored
-  }
+  if (loading) return null;
 
   return (
     <AuthContext.Provider
@@ -64,8 +133,8 @@ export const AuthProvider = ({ children }) => {
         isAuthenticated: !!token,
         isAdmin: user?.role === "admin",
         login,
-        logout,
-        updateUser, // ✅ expose updater
+        logout: handleLogout,
+        updateUser,
       }}
     >
       {children}
@@ -73,4 +142,5 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () =>
+  useContext(AuthContext);
